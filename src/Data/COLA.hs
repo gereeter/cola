@@ -20,6 +20,13 @@ data COLA vk va k a = Zero
 empty :: COLA vk va k a
 empty = Zero
 
+null :: COLA vk va k a -> Bool
+null Zero = True
+null _ = False
+
+singleton :: (V.Vector vk k, V.Vector va a, Ord k) => k -> a -> COLA vk va k a
+singleton k a = One (V.singleton k) (V.singleton a)
+
 lookup :: (V.Vector vk k, V.Vector va a, Ord k) => k -> COLA vk va k a -> Maybe a
 lookup k = k `seq` go
   where
