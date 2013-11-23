@@ -38,12 +38,12 @@ lookup k = k `seq` go
     bsearch vk va fallback = goSearch 0 (V.length vk)
       where
         goSearch start end
-            | start + 1 == end = if vk V.! start == k
-                                 then Just (va V.! start)
+            | start + 1 == end = if V.unsafeIndex vk start == k
+                                 then Just (V.unsafeIndex va start)
                                  else fallback
-            | otherwise = case compare k (vk V.! mid) of
+            | otherwise = case compare k (V.unsafeIndex vk mid) of
                 LT -> goSearch start mid
-                EQ -> Just (va V.! mid)
+                EQ -> Just (V.unsafeIndex va mid)
                 GT -> goSearch mid end
           where
             mid = (start + end) `div` 2
