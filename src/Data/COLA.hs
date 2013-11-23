@@ -12,6 +12,8 @@ import qualified Data.Vector.Generic.Mutable as VM
 import qualified Data.Vector.Fusion.Stream as S
 import Data.Vector.Fusion.Stream.Merge
 
+import Data.Bits (unsafeShiftR)
+
 data COLA vk va k a = Zero
                     | One                     !(vk k) !(va a)
                     | Two   !(COLA vk va k a) !(vk k) !(va a) !(vk k) !(va a)                 !(Partial (vk k, va a))
@@ -46,7 +48,7 @@ lookup k = k `seq` go
                 EQ -> Just (V.unsafeIndex va mid)
                 GT -> goSearch mid end
           where
-            mid = (start + end) `div` 2
+            mid = (start + end) `unsafeShiftR` 1
 
 insert :: (V.Vector vk k, V.Vector va a, Ord k) => k -> a -> COLA vk va k a -> COLA vk va k a
 insert k a = go (V.singleton k) (V.singleton a)
