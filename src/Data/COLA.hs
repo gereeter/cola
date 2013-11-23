@@ -13,7 +13,7 @@ import qualified Data.Vector.Fusion.Stream as S
 import Data.Vector.Fusion.Stream.Merge
 
 data COLA vk va k a = Zero
-                    | One   !(COLA vk va k a) !(vk k) !(va a)
+                    | One                     !(vk k) !(va a)
                     | Two   !(COLA vk va k a) !(vk k) !(va a) !(vk k) !(va a)                 !(Partial (vk k, va a))
                     | Three !(COLA vk va k a) !(vk k) !(va a) !(vk k) !(va a) !(vk k) !(va a) !(Partial (vk k, va a))
 
@@ -24,7 +24,7 @@ lookup :: (V.Vector vk k, V.Vector va a, Ord k) => k -> COLA vk va k a -> Maybe 
 lookup k = k `seq` go
   where
     go Zero = Nothing
-    go (One rest vk1 va1) = bsearch vk1 va1 (go rest)
+    go (One vk1 va1) = bsearch vk1 va1 Nothing
     go (Two rest vk1 va1 vk2 va2 _) = bsearch vk1 va1 (bsearch vk2 va2 (go rest))
     go (Three rest vk1 va1 vk2 va2 vk3 va3 _) = bsearch vk1 va1 (bsearch vk2 va2 (bsearch vk3 va3 (go rest)))
     
@@ -44,13 +44,13 @@ lookup k = k `seq` go
 insert :: (V.Vector vk k, V.Vector va a, Ord k) => k -> a -> COLA vk va k a -> COLA vk va k a
 insert k a = go (V.singleton k) (V.singleton a)
   where
-    go vk va Zero = One Zero vk va
-    go vk va (One rest vk1 va1) = Two (doSteps rest) vk va vk1 va1 (merge vk va vk1 va1)
+    go vk va Zero = One vk va
+    go vk va (One vk1 va1) = Two Zero vk va vk1 va1 (merge vk va vk1 va1)
     go vk va (Two rest vk1 va1 vk2 va2 part) = Three (doSteps rest) vk va vk1 va1 vk2 va2 (run 1 part)
     go vk va (Three rest vk1 va1 vk2 va2 vk3 va3 part) = Two (uncurry go (finish part) rest) vk va vk1 va1 (merge vk va vk1 va1)
     
     doSteps Zero = Zero
-    doSteps (One rest vk1 va1) = One (doSteps rest) vk1 va1
+    doSteps (One vk1 va1) = One vk1 va1
     doSteps (Two rest vk1 va1 vk2 va2 part) = Two (doSteps rest) vk1 va1 vk2 va2 (run 1 part)
     doSteps (Three rest vk1 va1 vk2 va2 vk3 va3 part) = Three (doSteps rest) vk1 va1 vk2 va2 vk3 va3 (run 1 part)
     
