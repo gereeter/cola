@@ -13,3 +13,10 @@ library
                      , Data.Vector.Fusion.Stream.Merge
   build-depends:       base, mtl, free, vector
   hs-source-dirs:      src
+
+benchmark main
+  Type: exitcode-stdio-1.0
+  HS-Source-Dirs: benchmarks
+  Main-Is: COLA.hs
+  Build-Depends: base, containers, cola, deepseq, criterion, vector
+  ghc-options: -Wall
